@@ -23,15 +23,16 @@
             position: relative;
             margin: 0 auto;
         }
-
-        .button-container {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
+            /* 添加样式，初始隐藏按钮容器 */
+            .button-container {
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+                cursor: pointer;
+                transition: transform 0.2s;
+                display: none; /* 初始隐藏 */
+            }
 
         #btn-bg {
             display: block;
@@ -67,6 +68,9 @@
         bgImg.onload = function() {
             imgRatio = this.width / this.height;
             updateLayout();
+            // 背景图加载完成后显示按钮
+            const container = document.querySelector('.button-container');
+            container.style.display = 'block';
         };
 
         function calculateBgDimensions() {

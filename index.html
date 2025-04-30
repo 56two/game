@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>北京石景山</title>
     <style>
+        /* 原有样式保持不变 */
         * {
             margin: 0;
             padding: 0;
@@ -24,16 +25,16 @@
             margin: 0 auto;
             display: none; /* 初始隐藏背景容器 */
         }
-            /* 添加样式，初始隐藏按钮容器 */
-            .button-container {
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                text-align: center;
-                cursor: pointer;
-                transition: transform 0.2s;
-                display: none; /* 初始隐藏 */
-            }
+
+        .button-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: none; /* 初始隐藏按钮容器 */
+        }
 
         #btn-bg {
             display: block;
@@ -50,9 +51,43 @@
             pointer-events: none;
             white-space: nowrap;
         }
+        /* 新增提示样式 */
+        .browser-prompt {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 999;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .prompt-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 80%;
+        }
+
+        .prompt-content p {
+            margin: 15px 0;
+            font-size: 18px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
+    <!-- 在页面底部添加提示层 -->
+    <div class="browser-prompt">
+        <div class="prompt-content">
+            <p>检测到您正在使用微信访问<br>请点击右上角...选择<br>【在浏览器打开】进行下载</p>
+        </div>
+    </div>
     <div class="background-wrapper">
         <div class="button-container" onclick="handleDownload()">
             <img src="按钮-bg.png" id="btn-bg" alt="下载按钮">
@@ -63,18 +98,35 @@
     <script>
         let imgRatio;
         const bgImg = new Image();
+        let apkUrl = null; // 存储动态获取的下载地址
         
         // 预加载背景图获取原始尺寸
         bgImg.src = '整体bg.png';
         bgImg.onload = function() {
             imgRatio = this.width / this.height;
             updateLayout();
-            // 背景图加载完成后显示背景容器和按钮
-        const container = document.querySelector('.button-container');
+         // 背景图加载完成后显示背景容器和按钮
+         const container = document.querySelector('.button-container');
         container.style.display = 'block';
         const backgroundWrapper = document.querySelector('.background-wrapper');
         backgroundWrapper.style.display = 'block';
         };
+
+        // 获取最新下载地址
+        async function fetchDownloadUrl() {
+            try {
+                const response = await fetch('https://cos.sjsrm.com/nams-res/apps/66f3b595e4b064c002b9432b/releases/devices/1/releases.json');
+                const data = await response.json();
+                
+                if (data.code === 0 && data.data?.path) {
+                    apkUrl = data.data.path;
+                } else {
+                    console.error('获取下载地址失败:', data.message);
+                }
+            } catch (error) {
+                console.error('网络请求失败:', error);
+            }
+        }
 
         function calculateBgDimensions() {
             const container = document.querySelector('.background-wrapper');
@@ -82,9 +134,7 @@
             const ch = container.clientHeight;
             const containerRatio = cw / ch;
 
-            // 计算背景图实际显示尺寸和位置
             if (containerRatio > imgRatio) {
-                // 垂直方向撑满
                 return {
                     width: ch * imgRatio,
                     height: ch,
@@ -92,7 +142,6 @@
                     left: (cw - ch * imgRatio) / 2
                 }
             } else {
-                // 水平方向撑满
                 return {
                     width: cw,
                     height: cw / imgRatio,
@@ -109,30 +158,66 @@
             const btn = document.getElementById('btn-bg');
             const text = document.querySelector('.button-text');
             
-            // 获取背景图实际尺寸
             const bg = calculateBgDimensions();
             
-            // 设置按钮尺寸
             btn.style.width = bg.width * 0.8 + 'px';
             
-            // 计算按钮位置（背景图底部向上80%）
             const buttonTop = bg.top + bg.height * 0.77;
             container.style.top = `${buttonTop}px`;
             
-            // 动态字体（按背景图宽度比例）
-            text.style.fontSize = bg.width * 0.045 + 'px'; // 4%比例
+            text.style.fontSize = bg.width * 0.045 + 'px';
         }
 
-        window.addEventListener('resize', updateLayout);
-        window.onload = updateLayout;
+        // 新增微信环境判断函数
+        function isWeixinBrowser() {
+            const ua = navigator.userAgent.toLowerCase();
+            return ua.includes('micromessenger');
+        }
 
-        function handleDownload() {
+        // 显示浏览器提示
+        function showBrowserPrompt() {
+            document.querySelector('.browser-prompt').style.display = 'block';
+        }
+
+        async function handleDownload() {
+            // 如果是微信环境
+            if (isWeixinBrowser()) {
+                showBrowserPrompt();
+                return; // 直接返回不执行后续逻辑
+            }
+            // iOS直接跳转App Store
             if (navigator.userAgent.match(/(iPhone|iPod|iPad);?/i)) {
                 window.location.href = "https://apps.apple.com/cn/app/%E5%8C%97%E4%BA%AC%E7%9F%B3%E6%99%AF%E5%B1%B1/id1185435616";
+                return;
+            }
+
+            // 如果尚未获取到地址，先尝试获取
+            if (!apkUrl) {
+                await fetchDownloadUrl();
+            }
+
+            if (apkUrl) {
+                window.location.href = apkUrl;
             } else {
-                window.location.href = "https://cos.sjsrm.com/nams-res/software/1cf502a084084aec47fc2250ca25dfd07b7bd6bd/1cf502a084084aec47fc2250ca25dfd07b7bd6bd.apk";
+                alert('暂时无法获取下载地址，请稍后再试');
             }
         }
+
+        // 初始化操作
+        window.addEventListener('resize', updateLayout);
+        window.onload = () => {
+            if (isWeixinBrowser()) {
+            showBrowserPrompt();
+        }
+            updateLayout();
+            fetchDownloadUrl(); // 页面加载时预获取下载地址
+        };
+    </script>
+
+    <script>
+
+
+ 
     </script>
 </body>
 </html>

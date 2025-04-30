@@ -12,7 +12,7 @@
 
         body {
             overflow: hidden;
-            background: #000;
+            background: #FFF;
         }
 
         .background-wrapper {
@@ -22,6 +22,7 @@
             background-size: cover;
             position: relative;
             margin: 0 auto;
+            display: none; /* 初始隐藏背景容器 */
         }
             /* 添加样式，初始隐藏按钮容器 */
             .button-container {
@@ -68,9 +69,11 @@
         bgImg.onload = function() {
             imgRatio = this.width / this.height;
             updateLayout();
-            // 背景图加载完成后显示按钮
-            const container = document.querySelector('.button-container');
-            container.style.display = 'block';
+            // 背景图加载完成后显示背景容器和按钮
+        const container = document.querySelector('.button-container');
+        container.style.display = 'block';
+        const backgroundWrapper = document.querySelector('.background-wrapper');
+        backgroundWrapper.style.display = 'block';
         };
 
         function calculateBgDimensions() {

@@ -1,129 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <title>北京石景山</title>
     <style>
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            overflow: hidden;
-            background: #000;
-        }
-
-        .background-wrapper {
-            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
-            background: url('整体bg.png') no-repeat center center;
-            background-size: cover;
-            position: relative;
-            margin: 0 auto;
-        }
-            /* 添加样式，初始隐藏按钮容器 */
-            .button-container {
-                position: absolute;
-                left: 50%;
-                transform: translateX(-50%);
-                text-align: center;
-                cursor: pointer;
-                transition: transform 0.2s;
-                display: none; /* 初始隐藏 */
-            }
-
-        #btn-bg {
-            display: block;
-            height: auto;
+            background: url('整体bg.png') no-repeat center center/contain;
         }
 
-        .button-text {
+        .button-container {
+            text-align: center;
+            background: url('按钮-bg.png') no-repeat center center/contain;
+            width: 800px; 
+            height: 150px; 
+            margin: auto;
             position: absolute;
-            top: 43%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-family: Arial, sans-serif;
-            pointer-events: none;
-            white-space: nowrap;
+            bottom: 16%; 
+        }
+
+        .button-container p {
+            color: white; 
+            font-size: 40px;
+            line-height: 130px; 
+            margin: 0;
         }
     </style>
 </head>
 <body>
-    <div class="background-wrapper">
-        <div class="button-container" onclick="handleDownload()">
-            <img src="按钮-bg.png" id="btn-bg" alt="下载按钮">
-            <div class="button-text">点击下载北京石景山客户端</div>
-        </div>
+    <div class="button-container" onclick="downloadApp()">
+        <p>点击下载北京石景山客户端</p>
     </div>
-
     <script>
-        let imgRatio;
-        const bgImg = new Image();
-        
-        // 预加载背景图获取原始尺寸
-        bgImg.src = '整体bg.png';
-        bgImg.onload = function() {
-            imgRatio = this.width / this.height;
-            updateLayout();
-            // 背景图加载完成后显示按钮
-            const container = document.querySelector('.button-container');
-            container.style.display = 'block';
-        };
-
-        function calculateBgDimensions() {
-            const container = document.querySelector('.background-wrapper');
-            const cw = container.clientWidth;
-            const ch = container.clientHeight;
-            const containerRatio = cw / ch;
-
-            // 计算背景图实际显示尺寸和位置
-            if (containerRatio > imgRatio) {
-                // 垂直方向撑满
-                return {
-                    width: ch * imgRatio,
-                    height: ch,
-                    top: 0,
-                    left: (cw - ch * imgRatio) / 2
-                }
-            } else {
-                // 水平方向撑满
-                return {
-                    width: cw,
-                    height: cw / imgRatio,
-                    top: (ch - cw / imgRatio) / 2,
-                    left: 0
-                }
-            }
-        }
-
-        function updateLayout() {
-            if (!imgRatio) return;
-            
-            const container = document.querySelector('.button-container');
-            const btn = document.getElementById('btn-bg');
-            const text = document.querySelector('.button-text');
-            
-            // 获取背景图实际尺寸
-            const bg = calculateBgDimensions();
-            
-            // 设置按钮尺寸
-            btn.style.width = bg.width * 0.8 + 'px';
-            
-            // 计算按钮位置（背景图底部向上80%）
-            const buttonTop = bg.top + bg.height * 0.77;
-            container.style.top = `${buttonTop}px`;
-            
-            // 动态字体（按背景图宽度比例）
-            text.style.fontSize = bg.width * 0.045 + 'px'; // 4%比例
-        }
-
-        window.addEventListener('resize', updateLayout);
-        window.onload = updateLayout;
-
-        function handleDownload() {
+        function downloadApp() {
             if (navigator.userAgent.match(/(iPhone|iPod|iPad);?/i)) {
                 window.location.href = "https://apps.apple.com/cn/app/%E5%8C%97%E4%BA%AC%E7%9F%B3%E6%99%AF%E5%B1%B1/id1185435616";
             } else {
